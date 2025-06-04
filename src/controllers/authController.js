@@ -3,71 +3,9 @@ import User from '../models/User.js';
 import { generateToken } from '../utils/jwt.js';
 import path from 'path';
 
-// export const register = async (req, res) => {
-//   try {
-//     // Handle validation errors
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Validation failed',
-//         errors: errors.array()
-//       });
-//     }
 
-//     const {
-//       firstName,
-//       lastName,
-//       email,
-//       password,
-//       phone,
-//       bio,
-//       position,
-//       address = {}
-//     } = req.body;
 
-//     // Check if user already exists
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'User already exists with this email'
-//       });
-//     }
 
-//     // Create a new user
-//     const user = await User.create({
-//       firstName,
-//       lastName,
-//       email,
-//       password,
-//       phone,
-//       bio,
-//       position,
-//       address
-//     });
-
-//     // Generate JWT token
-//     const token = generateToken({ id: user._id });
-
-//     res.status(201).json({
-//       success: true,
-//       message: 'User registered successfully',
-//       data: {
-//         user,
-//         token
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error('Registration error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Server error during registration',
-//       error: error.message
-//     });
-//   }
-// };
 export const register = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -190,6 +128,59 @@ export const login = async (req, res) => {
 };
 
 
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Validate request body
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      bio,
+      position
+    } = req.body;
+
+    const updateData = {};
+
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (bio !== undefined) updateData.bio = bio;
+    if (position !== undefined) updateData.position = position;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error during profile update',
+      error: error.message
+    });
+  }
+};
 export const logout = async (req, res) => {
   try {
     res.status(200).json({
@@ -227,89 +218,3 @@ export const getMe = async (req, res) => {
 };
 
 
-export const updateProfile = async (req, res) => {
-  try {
-    const { name, email } = req.body;
-    const userId = req.user._id;
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { name, email },
-      { new: true, runValidators: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: 'Profile updated successfully',
-      data: { user: updatedUser }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error during profile update',
-      error: error.message
-    });
-  }
-};
-
-
-
-export const changePassword = async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user._id).select('+password');
-
-    const isMatch = await user.comparePassword(currentPassword);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Current password is incorrect'
-      });
-    }
-
-    user.password = newPassword;
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Password changed successfully'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error during password change',
-      error: error.message
-    });
-  }
-};
-
-export const updateProfileImage = async (req, res) => {
-  try {
-    const imagePath = req.file?.path || req.body.imageUrl;
-
-    if (!imagePath) {
-      return res.status(400).json({
-        success: false,
-        message: 'No image provided'
-      });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      { profileImage: imagePath },
-      { new: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: 'Profile image updated successfully',
-      data: { user: updatedUser }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error during image update',
-      error: error.message
-    });
-  }
-};

@@ -80,36 +80,6 @@ export const updateProfileValidation = [
     .optional()
     .isLength({ max: 100 })
     .withMessage('Position cannot exceed 100 characters'),
-  
-  body('address.country')
-    .optional()
-    .trim()
-    .isLength({ max: 50 })
-    .withMessage('Country name cannot exceed 50 characters'),
-  
-  body('address.city')
-    .optional()
-    .trim()
-    .isLength({ max: 50 })
-    .withMessage('City name cannot exceed 50 characters'),
-  
-  body('address.state')
-    .optional()
-    .trim()
-    .isLength({ max: 50 })
-    .withMessage('State name cannot exceed 50 characters'),
-  
-  body('address.postalCode')
-    .optional()
-    .trim()
-    .isLength({ max: 20 })
-    .withMessage('Postal code cannot exceed 20 characters'),
-  
-  body('address.taxId')
-    .optional()
-    .trim()
-    .isLength({ max: 50 })
-    .withMessage('Tax ID cannot exceed 50 characters')
 ];
 export const mealValidation = [
   body('name').notEmpty().withMessage('Meal name is required'),
